@@ -2,8 +2,11 @@ package com.udacity.course3.reviews.controller;
 
 import com.udacity.course3.reviews.entity.Product;
 import com.udacity.course3.reviews.entity.Review;
+import com.udacity.course3.reviews.entity.ReviewDoc;
 import com.udacity.course3.reviews.repository.ProductRepository;
+import com.udacity.course3.reviews.repository.ReviewDocRepository;
 import com.udacity.course3.reviews.repository.ReviewRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,12 +19,14 @@ import java.util.Optional;
 @RestController
 public class ReviewsController {
 
-    private final ReviewRepository reviewRepository;
+    private ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
+    private final ReviewDocRepository reviewDocRepository;
 
-    public ReviewsController(ReviewRepository reviewRepository, ProductRepository productRepository) {
+    public ReviewsController(ReviewRepository reviewRepository, ProductRepository productRepository, ReviewDocRepository reviewDocRepository) {
         this.reviewRepository = reviewRepository;
         this.productRepository = productRepository;
+        this.reviewDocRepository = reviewDocRepository;
     }
 
     /**
@@ -32,14 +37,18 @@ public class ReviewsController {
      * @return The created review or 404 if product id is not found.
      */
     @RequestMapping(value = "/reviews/products/{productId}", method = RequestMethod.POST)
-    public ResponseEntity<Review> createReviewForProduct(@PathVariable("productId") Integer productId, @RequestBody Review review) {
+    public ResponseEntity<ReviewDoc> createReviewForProduct(@PathVariable("productId") Integer productId, @RequestBody Review review) {
         Optional<Product> optional = productRepository.findById(productId);
-        if (optional.isPresent()) {
-            review.setProduct(optional.get());
-            return ResponseEntity.ok(reviewRepository.save(review));
-        } else {
+        if (!optional.isPresent()) {
             return ResponseEntity.notFound().build();
         }
+        review.setProduct(optional.get());
+        reviewRepository.save(review);  // MySQL
+        ReviewDoc reviewDoc = new ReviewDoc(
+                review.getId(), review.getTitle(), review.getReviewText(), review.getRecommended(), productId
+        );
+        reviewDocRepository.save(reviewDoc);  // MongoDB
+        return ResponseEntity.ok(reviewDoc);
     }
 
     /**
@@ -49,7 +58,12 @@ public class ReviewsController {
      * @return The list of reviews.
      */
     @RequestMapping(value = "/reviews/products/{productId}", method = RequestMethod.GET)
-    public ResponseEntity<List<Review>> listReviewsForProduct(@PathVariable("productId") Integer productId) {
-        return ResponseEntity.ok(reviewRepository.findAllByProduct(new Product(productId)));
+    public ResponseEntity<List<ReviewDoc>> listReviewsForProduct(@PathVariable("productId") Integer productId) {
+        Optional<Product> optional = productRepository.findById(productId);
+        if (!optional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        List<ReviewDoc> reviewDocs = reviewDocRepository.findAllByProductId(productId);
+        return ResponseEntity.ok(reviewDocs);
     }
 }

@@ -11,11 +11,8 @@ public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     private String title;
-
     private String reviewText;
-
     private boolean recommended;
 
     @ManyToOne
@@ -51,7 +48,7 @@ public class Review {
         this.reviewText = reviewText;
     }
 
-    public boolean isRecommended() {
+    public boolean getRecommended() {
         return recommended;
     }
 

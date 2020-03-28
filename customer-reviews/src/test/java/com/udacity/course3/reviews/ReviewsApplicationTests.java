@@ -1,8 +1,6 @@
 package com.udacity.course3.reviews;
 
-import com.udacity.course3.reviews.entity.Comment;
-import com.udacity.course3.reviews.entity.Product;
-import com.udacity.course3.reviews.entity.Review;
+import com.udacity.course3.reviews.entity.*;
 import com.udacity.course3.reviews.repository.CommentRepository;
 import com.udacity.course3.reviews.repository.ProductRepository;
 import com.udacity.course3.reviews.repository.ReviewRepository;
@@ -56,14 +54,14 @@ public class ReviewsApplicationTests {
 	public void contextLoads() {}
 
 	@Test
-	public void testFindAllReviewsByProduct() {
-		List<Review> reviews = reviewRepository.findAllByProduct(product);
+	public void testFindAllReviewsByProductId() {
+		List<Review> reviews = reviewRepository.findAllByProductId(product.getId());
 		assertNotNull(reviews);
 	}
 
 	@Test
 	public void testFindAllCommentsByReview() {
-		List<Comment> comments = commentRepository.findAllByReview(review);
+		List<Comment> comments = commentRepository.findAllByReviewId(review.getId());
 		assertNotNull(comments);
 	}
 
